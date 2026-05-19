@@ -1,8 +1,40 @@
 // 对应 Go application/services/drama_service.go
 
+const fs = require('fs');
+const path = require('path');
+
 const storageLayout = require('./storageLayout');
 const { resolveStylePreset } = require('../constants/generationStylePresets');
 const seedance2AssetGuards = require('../utils/seedance2AssetGuards');
+
+function getStorageRoot() {
+  const loadConfig = require('../config').loadConfig;
+  const cfg = loadConfig();
+  const p = cfg.storage?.local_path || './data/storage';
+  return path.isAbsolute(p) ? p : path.join(process.cwd(), p);
+}
+
+function normalizeStorageRelativePath(videoUrl, baseUrl) {
+  if (!videoUrl || typeof videoUrl !== 'string') return '';
+  const raw = String(videoUrl).trim();
+  if (!raw) return '';
+  if (baseUrl) {
+    const normalizedBase = String(baseUrl).trim().replace(/\/$/, '');
+    if (normalizedBase && raw.startsWith(normalizedBase)) {
+      return raw.slice(normalizedBase.length).replace(/^\/+/, '');
+    }
+  }
+  if (raw.startsWith('/static/')) return raw.slice('/static/'.length);
+  if (raw.startsWith('static/')) return raw.slice('static/'.length);
+  if (/^https?:\/\//i.test(raw)) return '';
+  return raw.replace(/^\/+/, '');
+}
+
+function isManagedMergedVideo(relativePath) {
+  if (!relativePath) return false;
+  const normalized = String(relativePath).replace(/\\/g, '/');
+  return /(^|\/)videos\/merged\//.test(normalized);
+}
 
 /**
  * 清理 image_url：如果数据库中存储的是 base64 data URL，则返回 null。
@@ -778,6 +810,11 @@ function finalizeEpisode(db, log, episodeId, baseUrl, body = {}) {
     merge_options: {
       burn_narration_subtitles: !!(body && body.burn_narration_subtitles),
       burn_dialogue_audio: !!(body && body.burn_dialogue_audio),
+      enable_transition: !!(body && body.enable_transition),
+      transition_type: (body && body.transition_type != null)
+        ? String(body.transition_type).trim().toLowerCase()
+        : 'fade',
+      transition_duration: Number(body && body.transition_duration) || 0,
       watermark_text: (body && body.watermark_text != null)
         ? String(body.watermark_text).trim().slice(0, 200)
         : '',
@@ -805,6 +842,43 @@ function downloadEpisodeVideo(db, episodeId) {
   return { video_url: ep.video_url, title: ep.title, episode_number: ep.episode_number };
 }
 
+function deleteEpisodeVideo(db, log, episodeId) {
+  const ep = db.prepare('SELECT id, video_url FROM episodes WHERE id = ? AND deleted_at IS NULL').get(episodeId);
+  if (!ep) return null;
+
+  const now = new Date().toISOString();
+  const currentVideoUrl = ep.video_url ? String(ep.video_url).trim() : '';
+  let removedFile = false;
+
+  if (currentVideoUrl) {
+    const loadConfig = require('../config').loadConfig;
+    const cfg = loadConfig();
+    const relativePath = normalizeStorageRelativePath(currentVideoUrl, cfg?.storage?.base_url || '');
+    if (isManagedMergedVideo(relativePath)) {
+      const absPath = path.join(getStorageRoot(), relativePath.replace(/\//g, path.sep));
+      try {
+        if (fs.existsSync(absPath)) {
+          fs.unlinkSync(absPath);
+          removedFile = true;
+        }
+      } catch (err) {
+        log.warn('Delete episode merged video failed', {
+          episode_id: episodeId,
+          path: absPath,
+          error: err.message,
+        });
+      }
+    }
+  }
+
+  db.prepare('UPDATE episodes SET video_url = NULL, status = ?, updated_at = ? WHERE id = ?').run('draft', now, episodeId);
+  return {
+    episode_id: Number(episodeId),
+    removed: true,
+    removed_file: removedFile,
+  };
+}
+
 module.exports = {
   createDrama,
   getDrama,
@@ -820,5 +894,6 @@ module.exports = {
   saveProgress,
   finalizeEpisode,
   downloadEpisodeVideo,
+  deleteEpisodeVideo,
   generateStoryboard,
 };

@@ -209,6 +209,7 @@ function setupRouter(cfg, db, log) {
   r.get('/episodes/:episode_id/storyboards', storyboards.episodeStoryboardsGet);
   r.post('/episodes/:episode_id/finalize', drama.finalizeEpisode);
   r.get('/episodes/:episode_id/download', drama.downloadEpisodeVideo);
+  r.delete('/episodes/:episode_id/video', drama.deleteEpisodeVideo);
 
   // ---------- tasks ----------
   r.get('/tasks/:task_id', task.getTaskStatus);

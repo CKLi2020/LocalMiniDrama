@@ -46,6 +46,9 @@ export const dramaAPI = {
   finalizeEpisode(episodeId, data) {
     return request.post(`/episodes/${episodeId}/finalize`, data || {})
   },
+  deleteEpisodeVideo(episodeId) {
+    return request.delete(`/episodes/${episodeId}/video`)
+  },
   extractBackgrounds(episodeId, body) {
     return request.post(`/images/episode/${episodeId}/backgrounds/extract`, body || {})
   },

@@ -154,6 +154,16 @@ function downloadEpisodeVideo(db) {
   };
 }
 
+function deleteEpisodeVideo(db, log) {
+  return (req, res) => {
+    const episodeId = req.params.episode_id;
+    if (!episodeId) return response.badRequest(res, 'episode_id不能为空');
+    const result = dramaService.deleteEpisodeVideo(db, log, episodeId);
+    if (!result) return response.notFound(res, '剧集不存在');
+    response.success(res, result);
+  };
+}
+
 function exportDrama(db, cfg, log) {
   return (req, res) => {
     try {
@@ -281,6 +291,7 @@ module.exports = function dramaRoutes(db, cfg, log) {
     listProps: listProps(db),
     finalizeEpisode: finalizeEpisode(db, log, cfg),
     downloadEpisodeVideo: downloadEpisodeVideo(db),
+    deleteEpisodeVideo: deleteEpisodeVideo(db, log),
     generateStoryboard: generateStoryboard(db, log),
     exportDrama: exportDrama(db, cfg, log),
     importDrama: importDrama(db, cfg, log),

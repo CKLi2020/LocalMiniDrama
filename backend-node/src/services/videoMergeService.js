@@ -1,7 +1,10 @@
 const path = require('path');
 const fs = require('fs');
+const { spawnSync } = require('child_process');
 const { getFfmpegPath, getFfprobePath, hasLocalFfmpeg } = require('../utils/ffmpegPath');
 const storageLayout = require('./storageLayout');
+
+const TRANSITION_TYPES = new Set(['fade', 'dissolve', 'slideleft', 'slideright', 'circleopen']);
 
 function list(db, query) {
   let sql = 'FROM video_merges WHERE deleted_at IS NULL';
@@ -128,7 +131,6 @@ async function resolveVideoToLocalPath(videoUrl, baseUrl, storageRoot, tempDir, 
 /** 使用 ffmpeg concat 合并多个视频文件 */
 function runFfmpegConcat(localPaths, outputPath, log) {
   const ffmpegBin = getFfmpegPath();
-  const isWin = process.platform === 'win32';
   const listFile = path.join(path.dirname(outputPath), `concat_list_${Date.now()}.txt`);
   try {
     const lines = localPaths.map((p) => {
@@ -158,6 +160,143 @@ function runFfmpegConcat(localPaths, outputPath, log) {
   } finally {
     try { if (fs.existsSync(listFile)) fs.unlinkSync(listFile); } catch (_) {}
   }
+}
+
+function probeMediaInfo(filePath, log) {
+  const ffprobeBin = getFfprobePath();
+  const args = [
+    '-v', 'error',
+    '-show_entries', 'stream=index,codec_type,width,height,r_frame_rate,duration',
+    '-show_entries', 'format=duration',
+    '-of', 'json',
+    filePath,
+  ];
+  const result = spawnSync(ffprobeBin, args, { encoding: 'utf8', maxBuffer: 2 * 1024 * 1024 });
+  if (result.error || result.status !== 0) {
+    log.warn('Video merge: ffprobe failed', { file: filePath, error: result.error?.message, stderr: result.stderr?.slice(-500) });
+    return null;
+  }
+  try {
+    const data = JSON.parse(result.stdout || '{}');
+    const streams = Array.isArray(data.streams) ? data.streams : [];
+    const video = streams.find((item) => item.codec_type === 'video') || {};
+    const hasAudio = streams.some((item) => item.codec_type === 'audio');
+    const duration = Number.parseFloat(data.format?.duration || video.duration || 0) || 0;
+    const [num, den] = String(video.r_frame_rate || '25/1').split('/').map((item) => Number(item) || 0);
+    const fps = den > 0 ? num / den : 25;
+    return {
+      width: Math.max(16, Number(video.width) || 1280),
+      height: Math.max(16, Number(video.height) || 720),
+      fps: Math.min(60, Math.max(12, Math.round(fps || 25))),
+      duration,
+      hasAudio,
+    };
+  } catch (err) {
+    log.warn('Video merge: parse ffprobe output failed', { file: filePath, error: err.message });
+    return null;
+  }
+}
+
+function normalizeTransitionOptions(localPaths, mergeOpts, log) {
+  if (!mergeOpts?.enable_transition || localPaths.length < 2) return null;
+  const infos = localPaths.map((filePath) => probeMediaInfo(filePath, log));
+  if (infos.some((item) => !item || !(item.duration > 0))) return null;
+  const type = TRANSITION_TYPES.has(String(mergeOpts.transition_type || '').toLowerCase())
+    ? String(mergeOpts.transition_type).toLowerCase()
+    : 'fade';
+  const requestedDuration = Number(mergeOpts.transition_duration) || 0.3;
+  const boundedDuration = Math.min(0.8, Math.max(0.15, requestedDuration));
+  let safeDuration = boundedDuration;
+  for (let i = 0; i < infos.length - 1; i++) {
+    const pairMax = Math.min(infos[i].duration, infos[i + 1].duration) - 0.05;
+    safeDuration = Math.min(safeDuration, pairMax);
+  }
+  if (!(safeDuration >= 0.12)) {
+    log.warn('Video merge: transition skipped (clips too short)', {
+      requested: requestedDuration,
+      clip_durations: infos.map((item) => item.duration),
+    });
+    return null;
+  }
+  return {
+    type,
+    duration: Number(safeDuration.toFixed(3)),
+    width: infos[0].width,
+    height: infos[0].height,
+    fps: infos[0].fps,
+    infos,
+  };
+}
+
+function runFfmpegTransitionMerge(localPaths, outputPath, log, mergeOpts) {
+  const plan = normalizeTransitionOptions(localPaths, mergeOpts, log);
+  if (!plan) return false;
+  const ffmpegBin = getFfmpegPath();
+  const filterParts = [];
+
+  plan.infos.forEach((info, index) => {
+    filterParts.push(
+      `[${index}:v]fps=${plan.fps},scale=${plan.width}:${plan.height}:force_original_aspect_ratio=decrease,` +
+      `pad=${plan.width}:${plan.height}:(ow-iw)/2:(oh-ih)/2:color=black,format=yuv420p,setsar=1,settb=AVTB[v${index}]`
+    );
+    if (info.hasAudio) {
+      filterParts.push(
+        `[${index}:a]aformat=sample_rates=44100:channel_layouts=stereo,atrim=duration=${info.duration.toFixed(3)},asetpts=PTS-STARTPTS[a${index}]`
+      );
+    } else {
+      filterParts.push(
+        `anullsrc=r=44100:cl=stereo,atrim=duration=${info.duration.toFixed(3)},asetpts=N/SR/TB[a${index}]`
+      );
+    }
+  });
+
+  let currentVideoLabel = 'v0';
+  let currentAudioLabel = 'a0';
+  let accumulatedDuration = plan.infos[0].duration;
+  for (let index = 1; index < plan.infos.length; index++) {
+    const nextVideoLabel = index === plan.infos.length - 1 ? 'vout' : `vx${index}`;
+    const nextAudioLabel = index === plan.infos.length - 1 ? 'aout' : `ax${index}`;
+    const offset = Math.max(0, accumulatedDuration - plan.duration);
+    filterParts.push(
+      `[${currentVideoLabel}][v${index}]xfade=transition=${plan.type}:duration=${plan.duration.toFixed(3)}:offset=${offset.toFixed(3)}[${nextVideoLabel}]`
+    );
+    filterParts.push(
+      `[${currentAudioLabel}][a${index}]acrossfade=d=${plan.duration.toFixed(3)}:c1=tri:c2=tri[${nextAudioLabel}]`
+    );
+    accumulatedDuration = accumulatedDuration + plan.infos[index].duration - plan.duration;
+    currentVideoLabel = nextVideoLabel;
+    currentAudioLabel = nextAudioLabel;
+  }
+
+  const args = [];
+  localPaths.forEach((filePath) => {
+    args.push('-i', filePath);
+  });
+  args.push(
+    '-filter_complex', filterParts.join(';'),
+    '-map', '[vout]',
+    '-map', '[aout]',
+    '-c:v', 'libx264',
+    '-preset', 'veryfast',
+    '-crf', '20',
+    '-pix_fmt', 'yuv420p',
+    '-c:a', 'aac',
+    '-b:a', '192k',
+    '-movflags', '+faststart',
+    '-y',
+    outputPath,
+  );
+
+  const result = spawnSync(ffmpegBin, args, { encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 });
+  if (result.error) {
+    log.warn('Video merge: transition ffmpeg spawn error', { error: result.error.message });
+    return false;
+  }
+  if (result.status !== 0) {
+    log.warn('Video merge: transition ffmpeg failed', { stderr: result.stderr?.slice(-1000) });
+    return false;
+  }
+  return true;
 }
 
 /**
@@ -231,7 +370,16 @@ async function processVideoMerge(db, log, mergeId, baseUrl) {
     if (!fs.existsSync(mergedDir)) fs.mkdirSync(mergedDir, { recursive: true });
     const outputFileName = `merged_${Date.now()}.mp4`;
     const outputPath = path.join(mergedDir, outputFileName);
-    const ok = runFfmpegConcat(localPaths, outputPath, log);
+    let mergeOpts = {};
+    try {
+      mergeOpts = JSON.parse(r.merge_options || '{}');
+    } catch (_) {
+      mergeOpts = {};
+    }
+    const transitionEnabled = !!mergeOpts.enable_transition;
+    const ok = transitionEnabled
+      ? (runFfmpegTransitionMerge(localPaths, outputPath, log, mergeOpts) || runFfmpegConcat(localPaths, outputPath, log))
+      : runFfmpegConcat(localPaths, outputPath, log);
     if (ok && fs.existsSync(outputPath)) {
       mergedRelativePath = sub
         ? path.join(sub, 'videos', 'merged', outputFileName).replace(/\\/g, '/')
@@ -275,12 +423,18 @@ async function processVideoMerge(db, log, mergeId, baseUrl) {
   }
 
   const finalMergedUrl = mergedRelativePath || mergedUrlFallback;
+  let finalDuration = Math.round(totalDuration) || null;
+  if (mergedRelativePath) {
+    const finalAbsPath = path.join(storageRoot, mergedRelativePath.replace(/\//g, path.sep));
+    const finalInfo = probeMediaInfo(finalAbsPath, log);
+    if (finalInfo?.duration > 0) finalDuration = Math.round(finalInfo.duration);
+  }
   db.prepare(
     'UPDATE video_merges SET status = ?, merged_url = ?, duration = ?, completed_at = ?, error_msg = ? WHERE id = ?'
-  ).run('completed', finalMergedUrl, Math.round(totalDuration) || null, now, null, mergeId);
+  ).run('completed', finalMergedUrl, finalDuration, now, null, mergeId);
   db.prepare('UPDATE episodes SET video_url = ?, status = ?, updated_at = ? WHERE id = ?').run(finalMergedUrl, 'completed', now, episodeId);
   if (taskId) {
-    taskService.updateTaskResult(db, taskId, { merge_id: mergeId, video_url: finalMergedUrl, duration: Math.round(totalDuration) });
+    taskService.updateTaskResult(db, taskId, { merge_id: mergeId, video_url: finalMergedUrl, duration: finalDuration });
   }
   if (!mergedRelativePath) {
     log.info('Video merge completed (first-clip fallback)', { merge_id: mergeId, episode_id: episodeId });

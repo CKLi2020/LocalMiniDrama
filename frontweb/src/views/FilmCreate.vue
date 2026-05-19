@@ -1320,6 +1320,24 @@
               <span v-if="videoBurnDialogue" class="video-option-hint">开启后，将把各镜「配音」生成的对白 TTS 按分镜时长对齐并混入整集成片（无对白音频的分镜为静音）。可与「字幕」旁白同时开启，两条音轨会叠混。</span>
             </div>
           </el-form-item>
+          <el-form-item label="转场">
+            <div class="video-option-row">
+              <el-switch v-model="videoEnableTransition" @change="onVideoTransitionToggle" />
+              <span v-if="videoEnableTransition" class="video-option-hint">开启后会重新编码整集视频，更吃 CPU，导出会明显变慢。你可以在右侧选择转场方式。</span>
+              <el-select
+                v-if="videoEnableTransition"
+                v-model="videoTransitionType"
+                class="video-transition-select"
+                placeholder="选择转场方式"
+              >
+                <el-option label="淡入淡出" value="fade" />
+                <el-option label="叠化溶解" value="dissolve" />
+                <el-option label="左滑转场" value="slideleft" />
+                <el-option label="右滑转场" value="slideright" />
+                <el-option label="圆形展开" value="circleopen" />
+              </el-select>
+            </div>
+          </el-form-item>
           <el-form-item label="水印">
             <div class="video-option-row">
               <el-switch v-model="videoWatermark" />
@@ -1361,7 +1379,19 @@
           <el-alert type="error" :title="videoErrorMsg" show-icon />
         </div>
         <div v-if="currentEpisodeVideoUrl" class="video-preview-wrap">
-          <p class="video-preview-label">本集合成视频预览</p>
+          <div class="video-preview-head">
+            <p class="video-preview-label">本集合成视频预览</p>
+            <el-button
+              type="danger"
+              plain
+              size="small"
+              :loading="deletingEpisodeVideo"
+              :disabled="videoStatus === 'generating'"
+              @click="onDeleteEpisodeVideo"
+            >
+              删掉
+            </el-button>
+          </div>
           <video
             :src="currentEpisodeVideoUrl"
             controls
@@ -2325,7 +2355,10 @@ const videoQuality = ref('high')
 const videoSubtitle = ref(true)
 /** 合成整集时把各镜对白 TTS（audio_local_path）按分镜时长对齐并混入成片 */
 const videoBurnDialogue = ref(false)
+const videoEnableTransition = ref(false)
+const videoTransitionType = ref('fade')
 const videoWatermark = ref(false)
+const deletingEpisodeVideo = ref(false)
 /** 水印开启时烧录到成片右下角 */
 const videoWatermarkText = ref('')
 
@@ -5358,7 +5391,27 @@ function getFinalizeMergeOptions() {
   return {
     burn_narration_subtitles: !!videoSubtitle.value,
     burn_dialogue_audio: !!videoBurnDialogue.value,
+    enable_transition: !!videoEnableTransition.value,
+    transition_type: videoEnableTransition.value ? String(videoTransitionType.value || 'fade') : 'fade',
+    transition_duration: videoEnableTransition.value ? 0.3 : 0,
     watermark_text: videoWatermark.value ? String(videoWatermarkText.value || '').trim().slice(0, 200) : '',
+  }
+}
+
+async function onVideoTransitionToggle(next) {
+  if (!next) return
+  try {
+    await ElMessageBox.confirm(
+      '开启转场后需要重新编码整集视频，会更吃 CPU，导出会变慢。是否继续开启？',
+      '开启转场',
+      {
+        type: 'warning',
+        confirmButtonText: '继续开启',
+        cancelButtonText: '取消',
+      }
+    )
+  } catch (_) {
+    videoEnableTransition.value = false
   }
 }
 
@@ -5401,6 +5454,37 @@ async function onGenerateVideo() {
   } catch (e) {
     videoErrorMsg.value = e.message || '生成失败'
     store.setVideoStatus('error')
+  }
+}
+
+async function onDeleteEpisodeVideo() {
+  if (!currentEpisodeId.value || !currentEpisodeVideoUrl.value || deletingEpisodeVideo.value) return
+  try {
+    await ElMessageBox.confirm(
+      '删掉后会清空本集合成视频预览，之后可以重新点击“合成视频”。',
+      '删掉本集合成视频',
+      {
+        type: 'warning',
+        confirmButtonText: '确认删掉',
+        cancelButtonText: '取消',
+      }
+    )
+  } catch (_) {
+    return
+  }
+
+  deletingEpisodeVideo.value = true
+  try {
+    await dramaAPI.deleteEpisodeVideo(currentEpisodeId.value)
+    await loadDrama()
+    store.setVideoProgress(0)
+    store.setVideoStatus('idle')
+    videoErrorMsg.value = ''
+    ElMessage.success('已删掉本集合成视频，可以重新合成')
+  } catch (e) {
+    ElMessage.error(e.message || '删除失败')
+  } finally {
+    deletingEpisodeVideo.value = false
   }
 }
 
@@ -8379,6 +8463,9 @@ html.light .sb-video-placeholder {
   min-width: 200px;
   max-width: 360px;
 }
+.video-transition-select {
+  width: 180px;
+}
 .config-tip {
   margin: 12px 0 0;
   font-size: 0.9rem;
@@ -8536,8 +8623,16 @@ html.light .sb-narration-input :deep(.el-textarea__inner::placeholder) {
   padding-top: 16px;
   border-top: 1px solid #27272a;
 }
+.video-preview-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
 .video-preview-label {
-  margin: 0 0 10px;
+  margin: 0;
   font-size: 0.95rem;
   color: #a1a1aa;
 }
