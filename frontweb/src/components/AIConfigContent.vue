@@ -19,13 +19,17 @@
                 导入配置
               </el-button>
               <input ref="importFileRef" type="file" accept=".json" style="display:none" @change="importConfigs" />
-              <el-button type="success" plain @click="openOneKeyTongyi">
+              <el-button v-if="showTongyiOneKey" type="success" plain @click="openOneKeyTongyi">
                 <el-icon><MagicStick /></el-icon>
                 一键配置通义
               </el-button>
-              <el-button type="success" plain @click="openOneKeyVolc">
+              <el-button v-if="showVolcOneKey" type="success" plain @click="openOneKeyVolc">
                 <el-icon><MagicStick /></el-icon>
                 一键配置火山
+              </el-button>
+              <el-button type="success" plain @click="openOneKeyBlackcat">
+                <el-icon><MagicStick /></el-icon>
+                一键配置黑猫API
               </el-button>
             </div>
             <div class="actions-right">
@@ -917,6 +921,120 @@ input_reference = (图片文件，可选)</pre>
       </template>
     </el-dialog>
 
+    <!-- 一键配置黑猫API -->
+    <el-dialog
+      v-model="oneKeyBlackcatVisible"
+      title="一键配置黑猫API"
+      width="620px"
+      :close-on-click-modal="false"
+      @closed="resetOneKeyBlackcatForm"
+    >
+      <div class="one-key-help">
+        <div class="one-key-section">
+          <div class="one-key-section-title">📋 将自动创建以下配置</div>
+          <ul class="one-key-list">
+            <li><b>文本/对话</b>：DeepSeek V4（deepseek-v4-pro）— 生成故事剧本</li>
+            <li><b>文本生成图片</b>：即梦 4.5（doubao-seedream-4-5-251128）— 角色/场景/道具图</li>
+            <li><b>分镜图片生成</b>：即梦 4.5（doubao-seedream-4-5-251128）— 支持角色参考图</li>
+            <li><b>视频生成</b>：即梦 Seedance 1.5 Pro — 经典模式视频片段</li>
+            <li><b>文本生成视频</b>：即梦 Seedance 2.0 — 全能模式（volcengine_omni）</li>
+          </ul>
+        </div>
+        <div class="one-key-section">
+          <div class="one-key-section-title">🔗 固定接入地址</div>
+          <p class="one-key-note">Base URL：<code>https://ai.blackcatbaby.com</code></p>
+          <p class="one-key-note">同一个黑猫 API Key 会写入以上全部配置。</p>
+          <p class="one-key-note">默认会把 <b>经典模式视频</b> 设为当前默认视频配置；全能模式配置会一起创建，但运行时会按分镜模式自动切到对应视频链路。</p>
+        </div>
+        <div class="one-key-section">
+          <div class="one-key-section-title">🎛️ 模型选择</div>
+          <div class="one-key-model-grid">
+            <div class="one-key-model-item">
+              <div class="one-key-model-label">文本/对话</div>
+              <el-select v-model="oneKeyBlackcatModels.text" style="width: 100%">
+                <el-option
+                  v-for="option in blackcatModelOptions.text"
+                  :key="option.value"
+                  :label="option.label"
+                  :value="option.value"
+                />
+              </el-select>
+            </div>
+            <div class="one-key-model-item">
+              <div class="one-key-model-label">文本生成图片</div>
+              <el-select v-model="oneKeyBlackcatModels.image" style="width: 100%">
+                <el-option
+                  v-for="option in blackcatModelOptions.image"
+                  :key="option.value"
+                  :label="option.label"
+                  :value="option.value"
+                />
+              </el-select>
+            </div>
+            <div class="one-key-model-item">
+              <div class="one-key-model-label">分镜图片生成</div>
+              <el-select v-model="oneKeyBlackcatModels.storyboard_image" style="width: 100%">
+                <el-option
+                  v-for="option in blackcatModelOptions.storyboard_image"
+                  :key="option.value"
+                  :label="option.label"
+                  :value="option.value"
+                />
+              </el-select>
+            </div>
+            <div class="one-key-model-item">
+              <div class="one-key-model-label">视频生成（经典）</div>
+              <el-select v-model="oneKeyBlackcatModels.video_classic" style="width: 100%">
+                <el-option
+                  v-for="option in blackcatModelOptions.video_classic"
+                  :key="option.value"
+                  :label="option.label"
+                  :value="option.value"
+                />
+              </el-select>
+            </div>
+            <div class="one-key-model-item">
+              <div class="one-key-model-label">文本生成视频（全能）</div>
+              <el-select v-model="oneKeyBlackcatModels.video_omni" style="width: 100%">
+                <el-option
+                  v-for="option in blackcatModelOptions.video_omni"
+                  :key="option.value"
+                  :label="option.label"
+                  :value="option.value"
+                />
+              </el-select>
+            </div>
+          </div>
+          <p class="one-key-note">现在每个下拉默认只有一个模型；后续你只要修改项目根目录下的 blackcat-model-options.json，重新打开弹窗就会自动出现新的下拉选项。</p>
+        </div>
+      </div>
+      <el-form label-width="0" style="margin-top: 8px">
+        <el-form-item>
+          <el-input
+            v-model="oneKeyBlackcatKey"
+            type="password"
+            placeholder="请输入黑猫 API Key"
+            show-password-on="click"
+            clearable
+          />
+        </el-form-item>
+        <el-form-item class="one-key-priority-item">
+          <el-checkbox v-model="oneKeyBlackcatPreferHighest">
+            设为最高优先级
+          </el-checkbox>
+          <p class="one-key-note" style="margin-top: 6px">
+            勾选后，黑猫这套文本、图片、经典视频、全能视频都会提升到各自类型里的最高优先级；不勾选时，会保留当前已有配置的优先级，只有在该类型下没有别的配置时才自然使用黑猫。
+          </p>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="oneKeyBlackcatVisible = false">取消</el-button>
+        <el-button type="success" :loading="oneKeyBlackcatSaving" :disabled="!oneKeyBlackcatKey.trim()" @click="submitOneKeyBlackcat">
+          确定，一键创建配置
+        </el-button>
+      </template>
+    </el-dialog>
+
     <!-- 即梦2角色认证：素材列表 -->
     <el-dialog
       v-model="jimeng2AssetsDialogVisible"
@@ -1018,9 +1136,12 @@ import { generationSettingsAPI } from '@/api/prompts'
 import PromptEditor from '@/components/PromptEditor.vue'
 import SceneModelMap from '@/components/SceneModelMap.vue'
 import Sd2AssetManagement from '@/components/Sd2AssetManagement.vue'
+import { defaultBlackcatModelOptions, createDefaultBlackcatModelSelections, loadBlackcatModelOptions } from '@/constants/blackcatModelOptions'
 
 const activeTab = ref('configs')
 const importFileRef = ref(null)
+const showTongyiOneKey = false
+const showVolcOneKey = false
 
 // ---- 生成设置 ----
 const genConcurrencyInput = ref(3)
@@ -1202,6 +1323,18 @@ const oneKeyTongyiSaving = ref(false)
 const oneKeyVolcVisible = ref(false)
 const oneKeyVolcKey = ref('')
 const oneKeyVolcSaving = ref(false)
+const oneKeyBlackcatVisible = ref(false)
+const oneKeyBlackcatKey = ref('')
+const oneKeyBlackcatPreferHighest = ref(true)
+const oneKeyBlackcatModels = ref({
+  text: '',
+  image: '',
+  storyboard_image: '',
+  video_classic: '',
+  video_omni: '',
+})
+const oneKeyBlackcatSaving = ref(false)
+const blackcatModelOptions = ref(defaultBlackcatModelOptions)
 
 /** 预设厂商与模型（与参考前端一致） */
 const providerConfigs = {
@@ -1532,6 +1665,119 @@ const VOLCENGINE_CONFIGS = [
   { service_type: 'video', name: '火山引擎 即梦 视频', base_url: 'https://ark.cn-beijing.volces.com/api/v3', provider: 'volces', model: ['doubao-seedance-1-5-pro-251215'] }
 ]
 
+const BLACKCAT_BASE_URL = 'https://ai.blackcatbaby.com'
+
+const BLACKCAT_CONFIGS = [
+  {
+    model_key: 'text',
+    service_type: 'text',
+    name: '黑猫API 文本',
+    provider: 'blackcat',
+    api_protocol: 'openai',
+    base_url: BLACKCAT_BASE_URL,
+    endpoint: '/chat/completions',
+    model: ['deepseek-v4-pro'],
+    is_default: true,
+  },
+  {
+    model_key: 'image',
+    service_type: 'image',
+    name: '黑猫API 即梦 文本生图',
+    provider: 'blackcat',
+    api_protocol: 'volcengine',
+    base_url: BLACKCAT_BASE_URL,
+    endpoint: '/images/generations',
+    model: ['doubao-seedream-4-5-251128'],
+    is_default: true,
+  },
+  {
+    model_key: 'storyboard_image',
+    service_type: 'storyboard_image',
+    name: '黑猫API 即梦 分镜图',
+    provider: 'blackcat',
+    api_protocol: 'volcengine',
+    base_url: BLACKCAT_BASE_URL,
+    endpoint: '/images/generations',
+    model: ['doubao-seedream-4-5-251128'],
+    is_default: true,
+  },
+  {
+    model_key: 'video_classic',
+    service_type: 'video',
+    name: '黑猫API 即梦 视频（经典）',
+    provider: 'blackcat',
+    api_protocol: 'volcengine',
+    base_url: BLACKCAT_BASE_URL,
+    endpoint: '/videos/generations',
+    query_endpoint: '/tasks/{taskId}/info',
+    model: ['doubao-seedance-1-5-pro-251215'],
+    priority: 10,
+    is_default: true,
+  },
+  {
+    model_key: 'video_omni',
+    service_type: 'video',
+    name: '黑猫API 即梦 文生视频（全能）',
+    provider: 'blackcat',
+    api_protocol: 'volcengine_omni',
+    base_url: BLACKCAT_BASE_URL,
+    endpoint: '/contents/generations/tasks',
+    query_endpoint: '/contents/generations/tasks/{taskId}',
+    model: ['doubao-seedance-2-0-260128'],
+    priority: 9,
+    is_default: false,
+  },
+]
+
+const ONE_KEY_OMNI_VIDEO_PROTOCOLS = new Set(['kling_omni', 'volcengine_omni'])
+
+function normalizeConfigPriority(value, fallback = 0) {
+  const num = Number(value)
+  return Number.isFinite(num) ? num : fallback
+}
+
+function getOneKeyPriorityBucket(config) {
+  if ((config?.service_type || '') !== 'video') return config?.service_type || ''
+  const proto = String(config?.api_protocol || '').trim().toLowerCase()
+  return ONE_KEY_OMNI_VIDEO_PROTOCOLS.has(proto) ? 'video:omni' : 'video:classic'
+}
+
+function getActiveConfigs(configs) {
+  return Array.isArray(configs) ? configs.filter((cfg) => cfg && cfg.is_active !== false) : []
+}
+
+function resolveOneKeyPriority(config, existingConfigs, preferHighestPriority) {
+  const activeConfigs = getActiveConfigs(existingConfigs)
+  const bucket = getOneKeyPriorityBucket(config)
+  const bucketConfigs = activeConfigs.filter((item) => getOneKeyPriorityBucket(item) === bucket)
+  const fallback = normalizeConfigPriority(config.priority, 10)
+  if (bucketConfigs.length === 0) return fallback
+  const priorities = bucketConfigs.map((item) => normalizeConfigPriority(item.priority, 0))
+  if (preferHighestPriority) return Math.max(...priorities) + 1
+  return Math.min(...priorities) - 1
+}
+
+function resolveOneKeyDefault(config, existingConfigs, preferHighestPriority) {
+  const shouldDefault = config.is_default !== false
+  if (!shouldDefault) return false
+  if (preferHighestPriority) return true
+  const activeConfigs = getActiveConfigs(existingConfigs)
+  return !activeConfigs.some((item) => item.service_type === config.service_type)
+}
+
+function applyBlackcatModelSelections(configs, selections) {
+  return configs.map((cfg) => {
+    const selectedModel = selections?.[cfg.model_key]
+    const fallbackModel = Array.isArray(cfg.model) ? cfg.model[0] : cfg.model
+    const finalModel = String(selectedModel || fallbackModel || '').trim()
+    return {
+      ...cfg,
+      model: finalModel ? [finalModel] : [],
+      default_model: finalModel || null,
+    }
+  })
+}
+
 function serviceTypeLabel(t) {
   const map = {
     text: '文本',
@@ -1842,25 +2088,33 @@ function openOneKeyTongyi() {
   oneKeyTongyiVisible.value = true
 }
 
+async function createOneKeyConfigs(configs, apiKey) {
+  for (const cfg of configs) {
+    const models = cfg.model || []
+    const payload = {
+      service_type: cfg.service_type,
+      name: cfg.name,
+      provider: cfg.provider,
+      api_protocol: cfg.api_protocol || '',
+      base_url: cfg.base_url,
+      api_key: apiKey,
+      endpoint: cfg.endpoint || '',
+      query_endpoint: cfg.query_endpoint || '',
+      model: models,
+      default_model: cfg.default_model || models[0] || null,
+      priority: cfg.priority ?? 10,
+      is_default: cfg.is_default !== false,
+    }
+    await aiAPI.create(payload)
+  }
+}
+
 async function submitOneKeyTongyi() {
   const apiKey = oneKeyTongyiKey.value.trim()
   if (!apiKey) return
   oneKeyTongyiSaving.value = true
   try {
-    for (const cfg of TONGYI_CONFIGS) {
-      const models = cfg.model || []
-      await aiAPI.create({
-        service_type: cfg.service_type,
-        name: cfg.name,
-        provider: cfg.provider,
-        base_url: cfg.base_url,
-        api_key: apiKey,
-        model: models,
-        default_model: models[0] || null,
-        priority: 10,
-        is_default: true
-      })
-    }
+    await createOneKeyConfigs(TONGYI_CONFIGS, apiKey)
     ElMessage.success('已创建通义文本、文本生图、分镜图、视频配置')
     oneKeyTongyiVisible.value = false
     await loadList()
@@ -1881,20 +2135,7 @@ async function submitOneKeyVolc() {
   if (!apiKey) return
   oneKeyVolcSaving.value = true
   try {
-    for (const cfg of VOLCENGINE_CONFIGS) {
-      const models = cfg.model || []
-      await aiAPI.create({
-        service_type: cfg.service_type,
-        name: cfg.name,
-        provider: cfg.provider,
-        base_url: cfg.base_url,
-        api_key: apiKey,
-        model: models,
-        default_model: models[0] || null,
-        priority: 10,
-        is_default: true
-      })
-    }
+    await createOneKeyConfigs(VOLCENGINE_CONFIGS, apiKey)
     ElMessage.success('已创建火山引擎文本、文本生图、分镜图、视频配置')
     oneKeyVolcVisible.value = false
     await loadList()
@@ -1902,6 +2143,41 @@ async function submitOneKeyVolc() {
     // 错误已由 request 统一提示
   } finally {
     oneKeyVolcSaving.value = false
+  }
+}
+
+async function openOneKeyBlackcat() {
+  blackcatModelOptions.value = await loadBlackcatModelOptions()
+  resetOneKeyBlackcatForm()
+  oneKeyBlackcatVisible.value = true
+}
+
+function resetOneKeyBlackcatForm() {
+  oneKeyBlackcatKey.value = ''
+  oneKeyBlackcatPreferHighest.value = true
+  oneKeyBlackcatModels.value = createDefaultBlackcatModelSelections(blackcatModelOptions.value)
+}
+
+async function submitOneKeyBlackcat() {
+  const apiKey = oneKeyBlackcatKey.value.trim()
+  if (!apiKey) return
+  oneKeyBlackcatSaving.value = true
+  try {
+    const existingConfigs = await aiAPI.list()
+    const preferHighestPriority = oneKeyBlackcatPreferHighest.value === true
+    const blackcatConfigs = applyBlackcatModelSelections(BLACKCAT_CONFIGS, oneKeyBlackcatModels.value).map((cfg) => ({
+      ...cfg,
+      priority: resolveOneKeyPriority(cfg, existingConfigs, preferHighestPriority),
+      is_default: resolveOneKeyDefault(cfg, existingConfigs, preferHighestPriority),
+    }))
+    await createOneKeyConfigs(blackcatConfigs, apiKey)
+    ElMessage.success('已创建黑猫API 的文本、图片、分镜图、经典视频、全能视频配置')
+    oneKeyBlackcatVisible.value = false
+    await loadList()
+  } catch (_) {
+    // 错误已由 request 统一提示
+  } finally {
+    oneKeyBlackcatSaving.value = false
   }
 }
 
@@ -2112,6 +2388,24 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+.one-key-priority-item {
+  margin-bottom: 0;
+}
+.one-key-model-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+.one-key-model-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.one-key-model-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--el-text-color-primary, #303133);
 }
 .one-key-section {
   background: var(--el-fill-color-light, #f5f7fa);

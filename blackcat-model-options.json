@@ -1,0 +1,17 @@
+{
+  "text": [
+    { "label": "DeepSeek V4（deepseek-v4-pro）", "value": "deepseek-v4-pro" }
+  ],
+  "image": [
+    { "label": "即梦 4.5（doubao-seedream-4-5）", "value": "doubao-seedream-4-5" }
+  ],
+  "storyboard_image": [
+    { "label": "即梦 4.5（doubao-seedream-4-5）", "value": "doubao-seedream-4-5" }
+  ],
+  "video_classic": [
+    { "label": "即梦 Seedance 1.5 Pro（doubao-seedance-1-5-pro-251215）", "value": "doubao-seedance-1-5-pro-251215" }
+  ],
+  "video_omni": [
+    { "label": "即梦 Seedance 2.0（doubao-seedance-2-0-260128）", "value": "doubao-seedance-2-0-260128" }
+  ]
+}

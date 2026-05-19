@@ -208,7 +208,16 @@ async function processVideoGeneration(db, log, videoGenId) {
     const storageLocalPath = path.isAbsolute(cfg.storage?.local_path)
       ? cfg.storage.local_path
       : path.join(process.cwd(), cfg.storage?.local_path || './data/storage');
-    const config = videoClient.getDefaultVideoConfig(db, row.model);
+    let storyboardCreationMode = null;
+    const storyboardRow = row.storyboard_id
+      ? db.prepare('SELECT duration, creation_mode FROM storyboards WHERE id = ?').get(row.storyboard_id)
+      : null;
+    const preferOmni = storyboardRow?.creation_mode === 'universal';
+    const preferClassic = storyboardRow?.creation_mode === 'classic';
+    const config = videoClient.getDefaultVideoConfig(db, row.model, {
+      prefer_omni: preferOmni,
+      prefer_classic: preferClassic,
+    });
     if (!config) {
       setVideoGenFailed(db, videoGenId, '未配置视频模型', now);
       if (row.task_id) taskService.updateTaskError(db, row.task_id, '未配置视频模型');
@@ -223,12 +232,12 @@ async function processVideoGeneration(db, log, videoGenId) {
     }
     // 优先使用分镜自身的镜头时长（storyboard.duration），其次用 video_generations.duration
     let effectiveDuration = row.duration || null;
-    if (row.storyboard_id) {
-      const sb = db.prepare('SELECT duration FROM storyboards WHERE id = ?').get(row.storyboard_id);
-      if (sb && sb.duration > 0) {
-        effectiveDuration = sb.duration;
+    if (storyboardRow) {
+      if (storyboardRow.duration > 0) {
+        effectiveDuration = storyboardRow.duration;
         log.info('使用分镜镜头时长', { storyboard_id: row.storyboard_id, duration: effectiveDuration, video_gen_id: videoGenId });
       }
+      storyboardCreationMode = storyboardRow.creation_mode === 'universal' ? 'universal' : 'classic';
     }
     let aspectForVideo = row.aspect_ratio;
     if (aspectForVideo) {
@@ -263,6 +272,8 @@ async function processVideoGeneration(db, log, videoGenId) {
       image_url: row.image_url,
       first_frame_url: row.first_frame_url,
       last_frame_url: row.last_frame_url,
+      prefer_omni: storyboardCreationMode === 'universal',
+      prefer_classic: storyboardCreationMode === 'classic',
       reference_urls,
       files_base_url: filesBaseUrl,
       storage_local_path: storageLocalPath,

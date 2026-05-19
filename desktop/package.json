@@ -1,9 +1,9 @@
 {
   "name": "localminidrama-desktop",
   "version": "1.2.6",
-  "description": "LocalMiniDrama 本地桌面客户端",
+  "description": "BlackCatStudio 本地桌面客户端",
   "main": "main.js",
-  "author": "LocalMiniDrama",
+  "author": "BlackCatStudio",
   "license": "MIT",
   "scripts": {
     "prestart": "node scripts/copy-backend.js",
@@ -37,8 +37,8 @@
   },
   "build": {
     "appId": "com.localminidrama.desktop",
-    "productName": "本地短剧助手",
-    "artifactName": "LocalMiniDrama ${version}.${ext}",
+    "productName": "黑猫短剧工作室",
+    "artifactName": "BlackCatStudio ${version}.${ext}",
     "directories": {
       "output": "release"
     },

@@ -44,6 +44,24 @@ function resolveVideoProtocol(config, modelHint) {
   return protocol;
 }
 
+const OMNI_VIDEO_PROTOCOLS = new Set(['kling_omni', 'volcengine_omni']);
+
+function getNumericPriority(config) {
+  const value = Number(config?.priority);
+  return Number.isFinite(value) ? value : 0;
+}
+
+function pickHighestPriorityConfig(configs) {
+  if (!Array.isArray(configs) || configs.length === 0) return null;
+  return [...configs].sort((a, b) => {
+    const priorityDiff = getNumericPriority(b) - getNumericPriority(a);
+    if (priorityDiff !== 0) return priorityDiff;
+    const defaultDiff = Number(!!b?.is_default) - Number(!!a?.is_default);
+    if (defaultDiff !== 0) return defaultDiff;
+    return 0;
+  })[0] || null;
+}
+
 /** 可灵 Omni / 多图生视频（飞儿 ffir.cn 等中转）：可用环境变量临时覆盖配置 */
 function applyKlingOmniEnvOverrides(config) {
   const c = { ...config };
@@ -744,10 +762,28 @@ function parseKlingOmniPollVideoUrl(data) {
 }
 
 // ??????????????????listConfigs ?? is_default DESC, priority DESC ??
-function getDefaultVideoConfig(db, preferredModel) {
+function getDefaultVideoConfig(db, preferredModel, options = {}) {
   const configs = aiConfigService.listConfigs(db, 'video');
   const active = configs.filter((c) => c.is_active);
   if (active.length === 0) return null;
+  const preferOmni = options.prefer_omni === true;
+  const preferClassic = options.prefer_classic === true;
+  if (preferOmni || preferClassic) {
+    const scoped = active.filter((c) => {
+      const proto = resolveVideoProtocol(c, preferredModel);
+      const isOmni = OMNI_VIDEO_PROTOCOLS.has(proto);
+      return preferOmni ? isOmni : !isOmni;
+    });
+    if (scoped.length > 0) {
+      if (preferredModel) {
+        for (const c of scoped) {
+          const models = Array.isArray(c.model) ? c.model : (c.model != null ? [c.model] : []);
+          if (models.includes(preferredModel)) return c;
+        }
+      }
+      return pickHighestPriorityConfig(scoped);
+    }
+  }
   if (preferredModel) {
     for (const c of active) {
       const models = Array.isArray(c.model) ? c.model : (c.model != null ? [c.model] : []);
@@ -2671,7 +2707,10 @@ function applySeedance2CertifiedAssetUrlsToVideoOpts(db, log, opts) {
  */
 async function callVideoApi(db, log, opts) {
   const { prompt, model: preferredModel, duration, aspect_ratio, resolution, seed, camera_fixed, watermark, image_url, video_gen_id } = opts;
-  const config = getDefaultVideoConfig(db, preferredModel);
+  const config = getDefaultVideoConfig(db, preferredModel, {
+    prefer_omni: opts.prefer_omni === true,
+    prefer_classic: opts.prefer_classic === true,
+  });
   if (!config) {
     throw new Error('???????????AI ?????? video ?????????');
   }

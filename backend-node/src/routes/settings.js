@@ -1,5 +1,19 @@
+const fs = require('fs');
+const path = require('path');
 const settingsService = require('../services/settingsService');
 const response = require('../response');
+
+function resolveBlackcatModelOptionsPath() {
+  const repoRootFromRoutes = path.resolve(__dirname, '..', '..', '..');
+  const cwd = process.cwd();
+  const candidates = [
+    path.join(repoRootFromRoutes, 'blackcat-model-options.json'),
+    path.join(cwd, '..', 'blackcat-model-options.json'),
+    path.join(cwd, 'blackcat-model-options.json'),
+  ];
+
+  return candidates.find((filePath) => fs.existsSync(filePath)) || candidates[0];
+}
 
 function getLanguage(cfg) {
   return (req, res) => {
@@ -54,11 +68,30 @@ function updateGenerationSettings(db) {
   };
 }
 
+function getBlackcatModelOptions(log) {
+  return (req, res) => {
+    try {
+      const filePath = resolveBlackcatModelOptionsPath();
+      if (!fs.existsSync(filePath)) {
+        return response.notFound(res, 'blackcat-model-options.json 不存在');
+      }
+
+      const text = fs.readFileSync(filePath, 'utf8');
+      const json = JSON.parse(text);
+      response.success(res, json);
+    } catch (err) {
+      log.error('settings/blackcat-model-options', { error: err.message });
+      response.internalError(res, err.message || '读取黑猫模型配置失败');
+    }
+  };
+}
+
 module.exports = function settingsRoutes(db, cfg, log) {
   return {
     getLanguage: getLanguage(cfg),
     updateLanguage: updateLanguage(cfg, log),
     getGenerationSettings: getGenerationSettings(db),
     updateGenerationSettings: updateGenerationSettings(db),
+    getBlackcatModelOptions: getBlackcatModelOptions(log),
   };
 };
