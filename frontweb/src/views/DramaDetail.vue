@@ -3,7 +3,7 @@
     <header class="header">
       <div class="header-inner">
         <h1 class="logo" @click="router.push('/')">
-          <span class="logo-main">黑猫短剧工作室</span>
+          <span class="logo-main">黑猫短剧助手</span>
           <span class="logo-sub">BlackCatStudio</span>
         </h1>
         <span class="breadcrumb-sep">›</span>
@@ -1210,17 +1210,17 @@ onMounted(() => {
 <style scoped>
 .drama-detail {
   min-height: 100vh;
-  background: #0f0f12;
+  background: #09090c;
   background-image:
-    radial-gradient(ellipse 80% 50% at 20% -20%, rgba(120, 60, 220, 0.18) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 40% at 80% 110%, rgba(60, 100, 220, 0.12) 0%, transparent 60%);
+    radial-gradient(ellipse 78% 48% at 18% -20%, rgba(245, 158, 11, 0.15) 0%, transparent 62%),
+    radial-gradient(ellipse 60% 38% at 82% 108%, rgba(45, 212, 191, 0.08) 0%, transparent 60%);
   color: #e4e4e7;
 }
 .header {
-  background: rgba(18, 18, 22, 0.82);
+  background: rgba(12, 12, 16, 0.84);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(139, 92, 246, 0.18);
+  border-bottom: 1px solid rgba(245, 158, 11, 0.18);
   padding: 12px 24px;
   position: sticky;
   top: 0;
@@ -1228,15 +1228,15 @@ onMounted(() => {
   box-shadow: 0 2px 20px rgba(0, 0, 0, 0.4);
 }
 html.light .drama-detail {
-  background: #f5f3ff;
+  background: #fbf7ef;
   background-image:
-    radial-gradient(ellipse 80% 50% at 20% -20%, rgba(139, 92, 246, 0.12) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 40% at 80% 110%, rgba(99, 102, 241, 0.08) 0%, transparent 60%);
+    radial-gradient(ellipse 80% 50% at 20% -20%, rgba(245, 158, 11, 0.1) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 110%, rgba(20, 184, 166, 0.06) 0%, transparent 60%);
 }
 html.light .drama-detail .header {
   background: rgba(255, 255, 255, 0.85) !important;
-  border-bottom-color: rgba(139, 92, 246, 0.2) !important;
-  box-shadow: 0 2px 16px rgba(139, 92, 246, 0.08) !important;
+  border-bottom-color: rgba(217, 119, 6, 0.18) !important;
+  box-shadow: 0 2px 16px rgba(217, 119, 6, 0.08) !important;
 }
 .logo {
   margin: 0;
@@ -1247,11 +1247,11 @@ html.light .drama-detail .header {
   line-height: 1;
   transition: filter 0.3s;
 }
-.logo:hover { filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.5)); }
+.logo:hover { filter: drop-shadow(0 0 10px rgba(245, 158, 11, 0.38)); }
 .logo-main {
   font-size: 1.1rem;
   font-weight: 700;
-  background: linear-gradient(135deg, #c4b5fd 0%, #818cf8 50%, #a78bfa 100%);
+  background: linear-gradient(135deg, #fde68a 0%, #f59e0b 52%, #fff7ed 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -1264,7 +1264,7 @@ html.light .drama-detail .header {
   -webkit-text-fill-color: #6d6d7a;
 }
 html.light .drama-detail .logo-main {
-  background: linear-gradient(135deg, #7c3aed, #6366f1);
+  background: linear-gradient(135deg, #92400e, #d97706);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -1297,8 +1297,8 @@ html.light .breadcrumb-sep { color: #d1d5db; }
 }
 html.light .page-title {
   color: #6b7280;
-  background: rgba(99, 102, 241, 0.06);
-  border-color: rgba(99, 102, 241, 0.15);
+  background: rgba(245, 158, 11, 0.06);
+  border-color: rgba(217, 119, 6, 0.14);
 }
 .btn-back-list {
   flex-shrink: 0;
@@ -1316,17 +1316,17 @@ html.light .page-title {
   transition: box-shadow 0.3s, border-color 0.3s;
 }
 .section.card:hover {
-  border-color: rgba(139, 92, 246, 0.25);
-  box-shadow: 0 6px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(139, 92, 246, 0.08);
+  border-color: rgba(245, 158, 11, 0.24);
+  box-shadow: 0 6px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(245, 158, 11, 0.08);
 }
 html.light .section.card {
   background: rgba(255, 255, 255, 0.88);
-  border-color: rgba(139, 92, 246, 0.15);
-  box-shadow: 0 4px 20px rgba(139, 92, 246, 0.06);
+  border-color: rgba(217, 119, 6, 0.14);
+  box-shadow: 0 4px 20px rgba(217, 119, 6, 0.06);
 }
 html.light .section.card:hover {
-  border-color: rgba(139, 92, 246, 0.3);
-  box-shadow: 0 6px 28px rgba(139, 92, 246, 0.1);
+  border-color: rgba(217, 119, 6, 0.26);
+  box-shadow: 0 6px 28px rgba(217, 119, 6, 0.1);
 }
 .section-title { font-size: 1rem; font-weight: 600; color: #fafafa; margin-bottom: 16px; }
 html.light .section-title { color: #18181b; }
@@ -1515,20 +1515,20 @@ html.light .res-tab--drama.active::after { background: #7c3aed; }
 
 /* 主题切换按钮 */
 .btn-theme {
-  --el-button-bg-color: rgba(148, 163, 184, 0.1);
-  --el-button-border-color: rgba(148, 163, 184, 0.3);
-  --el-button-text-color: #94a3b8;
-  --el-button-hover-bg-color: rgba(148, 163, 184, 0.2);
-  --el-button-hover-border-color: rgba(148, 163, 184, 0.5);
-  --el-button-hover-text-color: #cbd5e1;
+  --el-button-bg-color: rgba(245, 158, 11, 0.1);
+  --el-button-border-color: rgba(245, 158, 11, 0.28);
+  --el-button-text-color: #fbbf24;
+  --el-button-hover-bg-color: rgba(245, 158, 11, 0.18);
+  --el-button-hover-border-color: rgba(245, 158, 11, 0.48);
+  --el-button-hover-text-color: #fde68a;
   transition: all 0.2s;
 }
 html.light .btn-theme {
-  --el-button-bg-color: rgba(99, 102, 241, 0.08);
-  --el-button-border-color: rgba(99, 102, 241, 0.3);
-  --el-button-text-color: #6366f1;
-  --el-button-hover-bg-color: rgba(99, 102, 241, 0.15);
-  --el-button-hover-border-color: rgba(99, 102, 241, 0.5);
-  --el-button-hover-text-color: #4f46e5;
+  --el-button-bg-color: rgba(217, 119, 6, 0.08);
+  --el-button-border-color: rgba(217, 119, 6, 0.24);
+  --el-button-text-color: #b45309;
+  --el-button-hover-bg-color: rgba(217, 119, 6, 0.14);
+  --el-button-hover-border-color: rgba(217, 119, 6, 0.42);
+  --el-button-hover-text-color: #92400e;
 }
 </style>

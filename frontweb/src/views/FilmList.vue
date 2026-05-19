@@ -3,7 +3,7 @@
     <header class="header">
       <div class="header-inner">
         <h1 class="logo">
-          <span class="logo-main">黑猫短剧工作室</span>
+          <span class="logo-main">黑猫短剧助手</span>
           <span class="logo-sub">BlackCatStudio</span>
         </h1>
         <!-- 公共资源库（左侧，靛紫调） -->
@@ -63,22 +63,13 @@
                   <el-icon><Upload /></el-icon>导入短剧项目
                 </el-button>
               </div>
-              <div v-if="exampleList.length > 0" class="action-card-example">
+              <div class="action-card-example">
                 <div class="example-hint">
                   <el-icon class="example-hint-icon"><QuestionFilled /></el-icon>
-                  <span class="example-hint-text">新手？试试导入示例项目快速体验</span>
-                </div>
-                <div class="example-list">
-                  <el-button
-                    v-for="ex in exampleList"
-                    :key="ex.filename"
-                    size="small"
-                    class="example-btn"
-                    :loading="importingExample === ex.filename"
-                    @click="onImportExample(ex)"
-                  >
-                    <el-icon><FolderOpened /></el-icon>{{ ex.name }}
-                  </el-button>
+                  <span class="example-hint-text">
+                    新手请先注册一下 API KEY:
+                    <a class="example-link" href="https://ai.blackcatbaby.com" target="_blank" rel="noopener noreferrer">https://ai.blackcatbaby.com</a>
+                  </span>
                 </div>
               </div>
             </div>
@@ -163,7 +154,7 @@
           </div>
           <div class="library-item-info">
             <div class="library-item-name">{{ item.name || '未命名' }}</div>
-            <div class="library-item-desc">{{ (item.description || '').slice(0, 60) }}{{ (item.description || '').length > 60 ? '…' : '' }}</div>
+            <div class="library-item-desc">{{ item.description || '暂无描述' }}</div>
             <div class="library-item-actions">
               <el-button size="small" @click="openEditCharLibrary(item)">编辑</el-button>
               <el-button size="small" type="danger" plain @click="onDeleteCharLibrary(item)">删除</el-button>
@@ -833,23 +824,23 @@ onMounted(async () => {
 <style scoped>
 .film-list {
   min-height: 100vh;
-  background: #08080d;
+  background: #060709;
   color: #e4e4e7;
   background-image:
-    radial-gradient(ellipse 70% 45% at 50% -10%, rgba(99, 102, 241, 0.18) 0%, transparent 70%),
-    radial-gradient(ellipse 50% 35% at 85% 55%, rgba(139, 92, 246, 0.1) 0%, transparent 60%),
-    radial-gradient(ellipse 40% 30% at 10% 80%, rgba(79, 70, 229, 0.08) 0%, transparent 60%);
+    radial-gradient(ellipse 72% 46% at 18% -12%, rgba(245, 158, 11, 0.16) 0%, transparent 66%),
+    radial-gradient(ellipse 48% 34% at 88% 18%, rgba(45, 212, 191, 0.08) 0%, transparent 58%),
+    radial-gradient(ellipse 42% 30% at 16% 82%, rgba(148, 163, 184, 0.07) 0%, transparent 60%);
 }
 .header {
-  background: rgba(12, 12, 18, 0.82);
+  background: rgba(10, 11, 14, 0.86);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(99, 102, 241, 0.18);
+  border-bottom: 1px solid rgba(245, 158, 11, 0.18);
   padding: 12px 24px;
   position: sticky;
   top: 0;
   z-index: 100;
-  box-shadow: 0 1px 0 rgba(99, 102, 241, 0.08), 0 4px 24px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 1px 0 rgba(245, 158, 11, 0.08), 0 4px 24px rgba(0, 0, 0, 0.34);
 }
 .header-inner {
   max-width: min(1400px, 96vw);
@@ -871,18 +862,18 @@ onMounted(async () => {
   font-size: 1.1rem;
   font-weight: 700;
   letter-spacing: -0.01em;
-  background: linear-gradient(135deg, #a5b4fc 0%, #c084fc 50%, #f0abfc 100%);
+  background: linear-gradient(135deg, #fde68a 0%, #f59e0b 46%, #fff7ed 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  filter: drop-shadow(0 0 10px rgba(168, 85, 247, 0.35));
+  filter: drop-shadow(0 0 12px rgba(245, 158, 11, 0.28));
 }
 .logo-sub {
   font-size: 0.68rem;
   font-weight: 400;
   letter-spacing: 0.02em;
-  color: #6d6d7a;
-  -webkit-text-fill-color: #6d6d7a;
+  color: #8a8a93;
+  -webkit-text-fill-color: #8a8a93;
   filter: none;
 }
 .page-title {
@@ -904,43 +895,43 @@ onMounted(async () => {
 
 /* 资源库按钮 —— 靛紫调 */
 .btn-library {
-  --el-button-bg-color: rgba(99, 102, 241, 0.12);
-  --el-button-border-color: rgba(99, 102, 241, 0.35);
-  --el-button-text-color: #a5b4fc;
-  --el-button-hover-bg-color: rgba(99, 102, 241, 0.22);
-  --el-button-hover-border-color: rgba(99, 102, 241, 0.55);
-  --el-button-hover-text-color: #c7d2fe;
-  --el-button-active-bg-color: rgba(99, 102, 241, 0.3);
-  --el-button-active-border-color: rgba(99, 102, 241, 0.7);
+  --el-button-bg-color: rgba(45, 212, 191, 0.12);
+  --el-button-border-color: rgba(45, 212, 191, 0.32);
+  --el-button-text-color: #99f6e4;
+  --el-button-hover-bg-color: rgba(45, 212, 191, 0.2);
+  --el-button-hover-border-color: rgba(45, 212, 191, 0.5);
+  --el-button-hover-text-color: #ccfbf1;
+  --el-button-active-bg-color: rgba(45, 212, 191, 0.28);
+  --el-button-active-border-color: rgba(45, 212, 191, 0.66);
 }
 html.light .btn-library {
-  --el-button-bg-color: rgba(79, 70, 229, 0.08);
-  --el-button-border-color: rgba(79, 70, 229, 0.3);
-  --el-button-text-color: #3730a3;
-  --el-button-hover-bg-color: rgba(79, 70, 229, 0.14);
-  --el-button-hover-border-color: rgba(79, 70, 229, 0.5);
-  --el-button-hover-text-color: #312e81;
-  --el-button-active-bg-color: rgba(79, 70, 229, 0.2);
-  --el-button-active-border-color: rgba(79, 70, 229, 0.65);
+  --el-button-bg-color: rgba(13, 148, 136, 0.08);
+  --el-button-border-color: rgba(13, 148, 136, 0.28);
+  --el-button-text-color: #115e59;
+  --el-button-hover-bg-color: rgba(13, 148, 136, 0.14);
+  --el-button-hover-border-color: rgba(13, 148, 136, 0.46);
+  --el-button-hover-text-color: #134e4a;
+  --el-button-active-bg-color: rgba(13, 148, 136, 0.18);
+  --el-button-active-border-color: rgba(13, 148, 136, 0.6);
 }
 
 /* 主题切换按钮 */
 .btn-theme {
-  --el-button-bg-color: rgba(148, 163, 184, 0.1);
-  --el-button-border-color: rgba(148, 163, 184, 0.3);
-  --el-button-text-color: #94a3b8;
-  --el-button-hover-bg-color: rgba(148, 163, 184, 0.2);
-  --el-button-hover-border-color: rgba(148, 163, 184, 0.5);
-  --el-button-hover-text-color: #cbd5e1;
+  --el-button-bg-color: rgba(245, 158, 11, 0.1);
+  --el-button-border-color: rgba(245, 158, 11, 0.28);
+  --el-button-text-color: #fbbf24;
+  --el-button-hover-bg-color: rgba(245, 158, 11, 0.18);
+  --el-button-hover-border-color: rgba(245, 158, 11, 0.5);
+  --el-button-hover-text-color: #fde68a;
   transition: all 0.2s;
 }
 html.light .btn-theme {
-  --el-button-bg-color: rgba(99, 102, 241, 0.08);
-  --el-button-border-color: rgba(99, 102, 241, 0.3);
-  --el-button-text-color: #6366f1;
-  --el-button-hover-bg-color: rgba(99, 102, 241, 0.15);
-  --el-button-hover-border-color: rgba(99, 102, 241, 0.5);
-  --el-button-hover-text-color: #4f46e5;
+  --el-button-bg-color: rgba(217, 119, 6, 0.08);
+  --el-button-border-color: rgba(217, 119, 6, 0.24);
+  --el-button-text-color: #b45309;
+  --el-button-hover-bg-color: rgba(217, 119, 6, 0.14);
+  --el-button-hover-border-color: rgba(217, 119, 6, 0.42);
+  --el-button-hover-text-color: #92400e;
 }
 
 /* 微信我按钮 —— 绿调 */
@@ -964,14 +955,14 @@ html.light .btn-wechat {
 
 /* AI配置按钮 —— 琥珀调 */
 .btn-settings {
-  --el-button-bg-color: rgba(234, 179, 8, 0.1);
-  --el-button-border-color: rgba(234, 179, 8, 0.32);
-  --el-button-text-color: #fcd34d;
-  --el-button-hover-bg-color: rgba(234, 179, 8, 0.2);
-  --el-button-hover-border-color: rgba(234, 179, 8, 0.5);
-  --el-button-hover-text-color: #fde68a;
-  --el-button-active-bg-color: rgba(234, 179, 8, 0.28);
-  --el-button-active-border-color: rgba(234, 179, 8, 0.65);
+  --el-button-bg-color: rgba(180, 83, 9, 0.12);
+  --el-button-border-color: rgba(180, 83, 9, 0.32);
+  --el-button-text-color: #fdba74;
+  --el-button-hover-bg-color: rgba(180, 83, 9, 0.2);
+  --el-button-hover-border-color: rgba(180, 83, 9, 0.5);
+  --el-button-hover-text-color: #ffedd5;
+  --el-button-active-bg-color: rgba(180, 83, 9, 0.28);
+  --el-button-active-border-color: rgba(180, 83, 9, 0.62);
 }
 html.light .btn-settings {
   --el-button-bg-color: rgba(180, 83, 9, 0.07);
@@ -1036,32 +1027,32 @@ html.light .btn-import {
   position: absolute;
   inset: 0;
   border-radius: 14px;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.04) 0%, transparent 60%);
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.05) 0%, transparent 62%);
   pointer-events: none;
 }
 .project-card:hover {
-  border-color: rgba(99, 102, 241, 0.55);
+  border-color: rgba(245, 158, 11, 0.48);
   background: rgba(28, 28, 36, 0.9);
   transform: translateY(-3px);
-  box-shadow: 0 12px 40px rgba(99, 102, 241, 0.15), 0 0 0 1px rgba(99, 102, 241, 0.1), 0 2px 8px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 12px 40px rgba(245, 158, 11, 0.12), 0 0 0 1px rgba(245, 158, 11, 0.08), 0 2px 8px rgba(0, 0, 0, 0.42);
 }
 
 /* 操作卡片 */
 .action-card {
   cursor: default;
   border-style: dashed;
-  border-color: rgba(99, 102, 241, 0.4);
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.06) 0%, rgba(139, 92, 246, 0.04) 100%);
+  border-color: rgba(245, 158, 11, 0.34);
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(45, 212, 191, 0.04) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: inset 0 0 40px rgba(99, 102, 241, 0.04);
+  box-shadow: inset 0 0 40px rgba(245, 158, 11, 0.04);
 }
 .action-card:hover {
-  border-color: rgba(99, 102, 241, 0.65);
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.07) 100%);
+  border-color: rgba(245, 158, 11, 0.52);
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(45, 212, 191, 0.06) 100%);
   transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(99, 102, 241, 0.12), inset 0 0 40px rgba(99, 102, 241, 0.06);
+  box-shadow: 0 8px 30px rgba(245, 158, 11, 0.12), inset 0 0 40px rgba(245, 158, 11, 0.05);
 }
 .action-card::before {
   display: none;
@@ -1076,7 +1067,7 @@ html.light .btn-import {
 .action-card-title {
   font-size: 1rem;
   font-weight: 600;
-  color: #a5b4fc;
+  color: #fde68a;
   margin: 0;
 }
 .action-card-buttons {
@@ -1092,17 +1083,25 @@ html.light .btn-import {
   --el-button-bg-color: var(--el-color-primary);
 }
 .action-btn-import {
-  --el-button-bg-color: rgba(99, 102, 241, 0.12);
-  --el-button-border-color: rgba(99, 102, 241, 0.35);
-  --el-button-text-color: #a5b4fc;
-  --el-button-hover-bg-color: rgba(99, 102, 241, 0.22);
-  --el-button-hover-border-color: rgba(99, 102, 241, 0.55);
-  --el-button-hover-text-color: #c7d2fe;
+  --el-button-bg-color: rgba(245, 158, 11, 0.12);
+  --el-button-border-color: rgba(245, 158, 11, 0.32);
+  --el-button-text-color: #fde68a;
+  --el-button-hover-bg-color: rgba(245, 158, 11, 0.2);
+  --el-button-hover-border-color: rgba(245, 158, 11, 0.5);
+  --el-button-hover-text-color: #fef3c7;
+}
+html.light .action-btn-import {
+  --el-button-bg-color: rgba(180, 83, 9, 0.08);
+  --el-button-border-color: rgba(180, 83, 9, 0.28);
+  --el-button-text-color: #92400e;
+  --el-button-hover-bg-color: rgba(180, 83, 9, 0.14);
+  --el-button-hover-border-color: rgba(180, 83, 9, 0.45);
+  --el-button-hover-text-color: #78350f;
 }
 .action-card-example {
   width: 100%;
   padding-top: 8px;
-  border-top: 1px solid rgba(99, 102, 241, 0.15);
+  border-top: 1px solid rgba(245, 158, 11, 0.14);
 }
 .example-hint {
   display: flex;
@@ -1110,14 +1109,29 @@ html.light .btn-import {
   gap: 6px;
   justify-content: center;
   margin-bottom: 8px;
+  flex-wrap: nowrap;
 }
 .example-hint-icon {
-  color: #a5b4fc;
+  color: #fbbf24;
   font-size: 15px;
+  flex: 0 0 auto;
 }
 .example-hint-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 0.8rem;
   color: #71717a;
+  white-space: nowrap;
+}
+.example-link {
+  color: #b45309;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.example-link:hover {
+  color: #92400e;
+  text-decoration: underline;
 }
 .example-list {
   display: flex;
@@ -1285,23 +1299,23 @@ html.light .btn-import {
 
 /* ===== 亮色模式适配 ===== */
 html.light .film-list {
-  background: #f5f3ff;
+  background: #fbf7ef;
   color: #1e1b4b;
   background-image:
-    radial-gradient(ellipse 70% 45% at 50% -10%, rgba(99, 102, 241, 0.1) 0%, transparent 70%),
-    radial-gradient(ellipse 50% 35% at 85% 55%, rgba(139, 92, 246, 0.06) 0%, transparent 60%);
+    radial-gradient(ellipse 72% 46% at 20% -12%, rgba(245, 158, 11, 0.1) 0%, transparent 70%),
+    radial-gradient(ellipse 46% 34% at 88% 18%, rgba(20, 184, 166, 0.06) 0%, transparent 60%);
 }
 html.light .header {
   background: rgba(248, 246, 255, 0.88);
-  border-bottom-color: rgba(99, 102, 241, 0.2);
-  box-shadow: 0 1px 0 rgba(99, 102, 241, 0.1), 0 4px 16px rgba(99, 102, 241, 0.06);
+  border-bottom-color: rgba(217, 119, 6, 0.18);
+  box-shadow: 0 1px 0 rgba(217, 119, 6, 0.08), 0 4px 16px rgba(217, 119, 6, 0.06);
 }
 html.light .logo-main {
-  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #9333ea 100%);
+  background: linear-gradient(135deg, #92400e 0%, #d97706 50%, #f59e0b 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.2));
+  filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.16));
 }
 html.light .logo-sub {
   color: #9ca3af;
@@ -1310,30 +1324,32 @@ html.light .logo-sub {
 html.light .project-card {
   background: rgba(255, 255, 255, 0.9);
   border-color: rgba(199, 210, 254, 0.8);
-  box-shadow: 0 1px 4px rgba(99, 102, 241, 0.06), 0 2px 12px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1px 4px rgba(217, 119, 6, 0.06), 0 2px 12px rgba(0, 0, 0, 0.04);
   backdrop-filter: none;
 }
 html.light .project-card::before {
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.03) 0%, transparent 60%);
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.04) 0%, transparent 60%);
 }
 html.light .project-card:hover {
-  border-color: rgba(99, 102, 241, 0.5);
+  border-color: rgba(217, 119, 6, 0.42);
   background: rgba(255, 255, 255, 0.98);
-  box-shadow: 0 12px 36px rgba(99, 102, 241, 0.12), 0 0 0 1px rgba(99, 102, 241, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 12px 36px rgba(217, 119, 6, 0.12), 0 0 0 1px rgba(217, 119, 6, 0.1), 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 html.light .action-card {
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.06) 0%, rgba(139, 92, 246, 0.04) 100%);
-  border-color: rgba(99, 102, 241, 0.35);
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.06) 0%, rgba(13, 148, 136, 0.04) 100%);
+  border-color: rgba(217, 119, 6, 0.3);
 }
 html.light .action-card:hover {
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.07) 100%);
-  border-color: rgba(99, 102, 241, 0.55);
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(13, 148, 136, 0.06) 100%);
+  border-color: rgba(217, 119, 6, 0.45);
 }
-html.light .action-card-title { color: #4f46e5; }
+html.light .action-card-title { color: #b45309; }
 html.light .project-title { color: #1e1b4b; }
 html.light .project-desc { color: #4b5563; }
 html.light .project-meta { color: #6b7280; }
 html.light .example-hint-text { color: #6b7280; }
+html.light .example-link { color: #92400e; }
+html.light .example-link:hover { color: #78350f; }
 html.light .library-item {
   background: #faf9ff;
   border-color: #e5e7eb;

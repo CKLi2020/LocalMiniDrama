@@ -15,6 +15,11 @@ html.dark {
   --text-subtle:   #71717a;
   --text-faint:    #52525b;
   --shadow:        0 2px 12px rgba(0,0,0,.4);
+  --el-color-primary: #f59e0b;
+  --el-color-primary-light-3: #fbbf24;
+  --el-color-primary-light-5: #fcd34d;
+  --el-color-primary-light-7: #fde68a;
+  --el-color-primary-dark-2: #d97706;
 }
 
 /* =====================================================
@@ -33,6 +38,11 @@ html.light {
   --text-subtle:   #71717a;
   --text-faint:    #a1a1aa;
   --shadow:        0 2px 12px rgba(0,0,0,.08);
+  --el-color-primary: #d97706;
+  --el-color-primary-light-3: #f59e0b;
+  --el-color-primary-light-5: #fbbf24;
+  --el-color-primary-light-7: #fde68a;
+  --el-color-primary-dark-2: #b45309;
 }
 
 /* ── 通用基础 ── */

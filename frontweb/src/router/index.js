@@ -44,7 +44,7 @@ const router = createRouter({
 
 router.beforeEach((to) => {
   if (to.meta.title) {
-    document.title = `${to.meta.title} - BlackCatStudio`
+    document.title = `${to.meta.title} - 黑猫短剧助手`
   }
   return true
 })

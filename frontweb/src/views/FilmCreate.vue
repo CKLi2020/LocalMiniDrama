@@ -4,7 +4,7 @@
     <header class="header">
       <div class="header-inner">
         <h1 class="logo" @click="goList">
-          <span class="logo-main">黑猫短剧工作室</span>
+          <span class="logo-main">黑猫短剧助手</span>
           <span class="logo-sub">BlackCatStudio</span>
         </h1>
         <span class="breadcrumb-sep">›</span>
@@ -6336,25 +6336,25 @@ onMounted(() => {
 <style scoped>
 .film-create {
   min-height: 100vh;
-  background: #09090b;
+  background: #07080a;
   background-image:
-    radial-gradient(ellipse 80% 50% at 10% -10%, rgba(124, 58, 237, 0.15) 0%, transparent 50%),
-    radial-gradient(ellipse 50% 40% at 85% 110%, rgba(56, 89, 209, 0.10) 0%, transparent 50%),
-    radial-gradient(circle at 50% 50%, rgba(15, 15, 20, 0) 0%, #09090b 100%);
+    radial-gradient(ellipse 80% 50% at 10% -10%, rgba(245, 158, 11, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 40% at 85% 110%, rgba(45, 212, 191, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(15, 15, 20, 0) 0%, #07080a 100%);
   color: #e4e4e7;
 }
 html.light .film-create {
-  background: #f8f7ff;
+  background: #fbf7ef;
   background-image:
-    radial-gradient(ellipse 80% 50% at 10% -10%, rgba(139, 92, 246, 0.08) 0%, transparent 50%),
-    radial-gradient(ellipse 50% 40% at 85% 110%, rgba(99, 102, 241, 0.06) 0%, transparent 50%);
+    radial-gradient(ellipse 80% 50% at 10% -10%, rgba(245, 158, 11, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 40% at 85% 110%, rgba(20, 184, 166, 0.06) 0%, transparent 50%);
   color: #1e1b4b;
 }
 .header {
   background: rgba(9, 9, 11, 0.75);
   backdrop-filter: blur(20px) saturate(1.4);
   -webkit-backdrop-filter: blur(20px) saturate(1.4);
-  border-bottom: 1px solid rgba(139, 92, 246, 0.12);
+  border-bottom: 1px solid rgba(245, 158, 11, 0.14);
   padding: 10px 28px;
   position: sticky;
   top: 0;
@@ -6368,8 +6368,8 @@ html.light .film-create {
 }
 html.light .header {
   background: rgba(255, 255, 255, 0.82) !important;
-  border-bottom-color: rgba(139, 92, 246, 0.1) !important;
-  box-shadow: 0 1px 0 rgba(139,92,246,0.06), 0 4px 20px rgba(139, 92, 246, 0.05) !important;
+  border-bottom-color: rgba(217, 119, 6, 0.12) !important;
+  box-shadow: 0 1px 0 rgba(217,119,6,0.06), 0 4px 20px rgba(217, 119, 6, 0.05) !important;
 }
 .header-inner {
   display: flex;
@@ -6385,11 +6385,11 @@ html.light .header {
   line-height: 1;
   transition: filter 0.3s;
 }
-.logo:hover { filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.5)); }
+.logo:hover { filter: drop-shadow(0 0 10px rgba(245, 158, 11, 0.36)); }
 .logo-main {
   font-size: 1.05rem;
   font-weight: 700;
-  background: linear-gradient(135deg, #e0d4fc 0%, #a78bfa 50%, #818cf8 100%);
+  background: linear-gradient(135deg, #fde68a 0%, #f59e0b 52%, #fff7ed 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -6404,7 +6404,7 @@ html.light .header {
   text-transform: uppercase;
 }
 html.light .logo-main {
-  background: linear-gradient(135deg, #6d28d9, #4f46e5);
+  background: linear-gradient(135deg, #92400e, #d97706);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -6436,8 +6436,8 @@ html.light .breadcrumb-sep { color: #d1d5db; }
 }
 html.light .page-title {
   color: #6b7280;
-  background: rgba(99, 102, 241, 0.04);
-  border-color: rgba(99, 102, 241, 0.1);
+  background: rgba(245, 158, 11, 0.05);
+  border-color: rgba(217, 119, 6, 0.12);
 }
 .btn-back-drama {
   flex-shrink: 0;
@@ -6453,17 +6453,17 @@ html.light .page-title {
   --el-button-border-color: rgba(255, 255, 255, 0.08);
   --el-button-text-color: #71717a;
   --el-button-hover-bg-color: rgba(255, 255, 255, 0.08);
-  --el-button-hover-border-color: rgba(139, 92, 246, 0.25);
-  --el-button-hover-text-color: #a78bfa;
+  --el-button-hover-border-color: rgba(245, 158, 11, 0.25);
+  --el-button-hover-text-color: #fbbf24;
   transition: all 0.2s ease;
 }
 html.light .btn-theme {
-  --el-button-bg-color: rgba(99, 102, 241, 0.04);
-  --el-button-border-color: rgba(99, 102, 241, 0.12);
+  --el-button-bg-color: rgba(217, 119, 6, 0.04);
+  --el-button-border-color: rgba(217, 119, 6, 0.12);
   --el-button-text-color: #6b7280;
-  --el-button-hover-bg-color: rgba(99, 102, 241, 0.08);
-  --el-button-hover-border-color: rgba(99, 102, 241, 0.3);
-  --el-button-hover-text-color: #4f46e5;
+  --el-button-hover-bg-color: rgba(217, 119, 6, 0.08);
+  --el-button-hover-border-color: rgba(217, 119, 6, 0.28);
+  --el-button-hover-text-color: #b45309;
 }
 /* ===== 左侧固定侧边栏 ===== */
 .quick-nav {
@@ -6478,7 +6478,7 @@ html.light .btn-theme {
   background: linear-gradient(180deg, rgba(12, 12, 16, 0.98) 0%, rgba(9, 9, 11, 0.99) 100%);
   backdrop-filter: blur(20px) saturate(1.3);
   -webkit-backdrop-filter: blur(20px) saturate(1.3);
-  border-right: 1px solid rgba(139, 92, 246, 0.1);
+  border-right: 1px solid rgba(245, 158, 11, 0.1);
   box-shadow: 1px 0 0 rgba(255,255,255,0.02), 4px 0 24px rgba(0, 0, 0, 0.3);
   width: 180px;
   overflow-y: auto;
@@ -6487,11 +6487,11 @@ html.light .btn-theme {
 }
 html.light .quick-nav {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 247, 255, 0.99) 100%);
-  border-right-color: rgba(139, 92, 246, 0.1);
-  box-shadow: 1px 0 0 rgba(139,92,246,0.06), 4px 0 20px rgba(139, 92, 246, 0.04);
+  border-right-color: rgba(217, 119, 6, 0.1);
+  box-shadow: 1px 0 0 rgba(217,119,6,0.06), 4px 0 20px rgba(217, 119, 6, 0.04);
 }
 .quick-nav::-webkit-scrollbar { width: 4px; }
-.quick-nav::-webkit-scrollbar-thumb { background: rgba(139,92,246,0.25); border-radius: 4px; }
+.quick-nav::-webkit-scrollbar-thumb { background: rgba(245,158,11,0.25); border-radius: 4px; }
 .quick-nav::-webkit-scrollbar-track { background: transparent; }
 .quick-nav.collapsed {
   width: 48px;
