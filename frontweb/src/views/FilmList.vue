@@ -30,7 +30,7 @@
           <el-button v-if="!vendorLockEnabled" class="btn-wechat" title="扫码联系作者" @click="showWechat = true">
             <el-icon><ChatDotSquare /></el-icon>微信我
           </el-button>
-          <el-button class="btn-theme" :title="isDark ? '切换到浅色模式' : '切换到暗色模式'" @click="toggleTheme">
+          <el-button v-show="false" class="btn-theme" :title="isDark ? '切换到浅色模式' : '切换到暗色模式'" @click="toggleTheme">
             <el-icon><Sunny v-if="isDark" /><Moon v-else /></el-icon>
             {{ isDark ? '浅色' : '暗色' }}
           </el-button>
@@ -41,8 +41,8 @@
             <el-icon><Upload /></el-icon>导入项目
           </el-button>
           <input ref="importFileInput" type="file" accept=".zip" style="display:none" @change="onImportFile" />
-          <el-button type="primary" class="btn-new" @click="goNewProject">
-            <el-icon><Plus /></el-icon>新建项目
+          <el-button class="btn-import" @click="openMoreSoftware">
+            <el-icon><Files /></el-icon>更多软件
           </el-button>
         </div>
       </div>
@@ -696,6 +696,10 @@ function totalStoryboards(d) {
 
 function goNewProject() {
   showNewDialog.value = true
+}
+
+function openMoreSoftware() {
+  window.open('https://blackcatbaby.com', '_blank', 'noopener')
 }
 
 function resetNewForm() {
