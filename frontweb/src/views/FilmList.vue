@@ -3,7 +3,7 @@
     <header class="header">
       <div class="header-inner">
         <h1 class="logo">
-          <span class="logo-main">黑猫短剧助手</span>
+          <span class="logo-main">黑猫短剧剧场</span>
           <span class="logo-sub">BlackCatStudio</span>
         </h1>
         <!-- 公共资源库（左侧，靛紫调） -->
